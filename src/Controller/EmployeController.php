@@ -20,6 +20,18 @@ class EmployeController extends AbstractController
 
     }
 
+    #[Route('/xxx', name: 'app_xxx')]
+    public function xxx()
+    {
+        dd('ok');
+    }
+
+    #[Route('/bienvenue', name: 'app_bienvenue')]
+    public function bienvenue(): Response
+    {
+        return $this->render('authentification/bienvenue.html.twig');
+    }
+
     #[Route('/employes', name: 'app_employes')]
     public function employes(): Response
     {
