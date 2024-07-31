@@ -48,7 +48,7 @@ class RegistrationFormType extends AbstractType
                 'required' => true,
                 'first_options' => ['label' => 'Mot de passe'],
                 'second_options' => ['label' => 'Confirmation mot de passe'],
-                // 'constraints' => [new NotBlank()]
+                'constraints' => [new NotBlank()]
 
             ])
             // ->add('plainPassword', PasswordType::class, [
