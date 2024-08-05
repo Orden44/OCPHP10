@@ -11,7 +11,7 @@ use App\Repository\StatutRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Projet;
 use App\Form\ProjetType;
-
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 class ProjetController extends AbstractController
 {
     public function __construct(
@@ -20,15 +20,33 @@ class ProjetController extends AbstractController
         private EntityManagerInterface $entityManager,
     )
     {
-
     }
 
     #[Route('/', name: 'app_projets')]
+
     public function projets(): Response
     {
-        $projets = $this->projetRepository->findBy([
-            'archive' => false,
-        ]);
+        $user = $this->getUser();
+        $roles = $user->getRoles();
+    
+        $projets = [];
+    
+        if (in_array('ROLE_ADMIN', $roles)) {
+            // Administrateurs - récupérer tous les projets
+            $projets = $this->projetRepository->findBy(['archive' => false]);
+        } else {
+            // Utilisateurs normaux - récupérer les projets assignés à l'utilisateur connecté
+            $allProjets = $this->projetRepository->findBy(['archive' => false]);
+
+            foreach ($allProjets as $projet) {
+                foreach ($projet->getEmployes() as $employe) {
+                    if ($employe === $user) {
+                        $projets[] = $projet;
+                        break;
+                    }
+                }
+            }      
+        }
 
         return $this->render('projet/liste.html.twig', [
             'projets' => $projets,
@@ -36,6 +54,7 @@ class ProjetController extends AbstractController
     }
 
     #[Route('/projets/ajouter', name: 'app_projet_add')]
+    #[IsGranted('ROLE_ADMIN')]
     public function ajouterProjet(Request $request): Response
     {  
         $projet = new Projet();
@@ -57,6 +76,7 @@ class ProjetController extends AbstractController
     }
 
     #[Route('/projets/{id}', name: 'app_projet')]
+    #[IsGranted('acces_projet', 'id', "Vous ne pouvez accèder à ce projet", 403)]
     public function projet(int $id): Response
     {  
         $statuts = $this->statutRepository->findAll();
@@ -73,6 +93,7 @@ class ProjetController extends AbstractController
     }
 
     #[Route('/projets/{id}/archiver', name: 'app_projet_archive')]
+    #[IsGranted('ROLE_ADMIN')]
     public function archiverProjet(int $id): Response
     {  
         $projet = $this->projetRepository->find($id);
@@ -89,6 +110,7 @@ class ProjetController extends AbstractController
 
 
     #[Route('/projets/{id}/editer', name: 'app_projet_edit')]
+    #[IsGranted('ROLE_ADMIN')]
     public function editerProjet(int $id, Request $request): Response
     {  
         $projet = $this->projetRepository->find($id);
@@ -105,7 +127,6 @@ class ProjetController extends AbstractController
             $this->entityManager->flush();
             return $this->redirectToRoute('app_projet', ['id' => $projet->getId()]);
         }
-
 
         return $this->render('projet/editer.html.twig', [
             'projet' => $projet,

@@ -20,12 +20,6 @@ class EmployeController extends AbstractController
 
     }
 
-    #[Route('/xxx', name: 'app_xxx')]
-    public function xxx()
-    {
-        dd('ok');
-    }
-
     #[Route('/bienvenue', name: 'app_bienvenue')]
     public function bienvenue(): Response
     {
