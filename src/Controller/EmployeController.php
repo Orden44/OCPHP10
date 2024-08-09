@@ -29,6 +29,7 @@ class EmployeController extends AbstractController
         private EntityManagerInterface $entityManager,
     )
     {
+
     }
 
     #[Route('/bienvenue', name: 'app_bienvenue')]
