@@ -11,10 +11,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Scheb\TwoFactorBundle\Model\Google\TwoFactorInterface;
+
 
 #[ORM\Entity(repositoryClass: EmployeRepository::class)]
 #[UniqueEntity(fields: ['email'], message: 'Il existe déjà un compte avec cette email')]
-class Employe implements UserInterface, PasswordAuthenticatedUserInterface
+class Employe implements UserInterface, PasswordAuthenticatedUserInterface, TwoFactorInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -53,6 +55,9 @@ class Employe implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\ManyToMany(targetEntity: Projet::class, mappedBy: 'employes')]
     private Collection $projets;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $googleAuthenticatorSecret;
 
     public function __construct()
     {
@@ -195,6 +200,18 @@ class Employe implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+    
+    public function isAdmin(): bool 
+    {
+        return in_array('ROLE_ADMIN', $this->roles);
+    }
+
+    public function setAdmin(bool $admin): static 
+    {
+        $this->roles = $admin ? ['ROLE_ADMIN'] : [];
+
+        return $this;
+    }
 
     /**
      * @see UserInterface
@@ -204,4 +221,27 @@ class Employe implements UserInterface, PasswordAuthenticatedUserInterface
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
     }
+
+    public function getGoogleAuthenticatorSecret(): ?string
+    {
+        return $this->googleAuthenticatorSecret;
+    }
+
+    public function setGoogleAuthenticatorSecret(?string $googleAuthenticatorSecret): static
+    {
+        $this->googleAuthenticatorSecret = $googleAuthenticatorSecret;
+
+        return $this;
+    }
+
+    public function isGoogleAuthenticatorEnabled(): bool
+    {
+        return null !== $this->googleAuthenticatorSecret;
+    }
+ 
+    public function getGoogleAuthenticatorUsername(): string
+    {
+        return $this->email;
+    } 
+
 }

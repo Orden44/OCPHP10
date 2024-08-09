@@ -22,7 +22,6 @@ class TacheController extends AbstractController
         private EntityManagerInterface $entityManager,
     )
     {
-
     }
 
     #[Route('/projets/{id}/taches/ajouter', name: 'app_tache_add')]
