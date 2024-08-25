@@ -11,8 +11,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
-use Scheb\TwoFactorBundle\Model\Google\TwoFactorInterface;
-
+use Scheb\TwoFactorBundle\Model\Email\TwoFactorInterface;
 
 #[ORM\Entity(repositoryClass: EmployeRepository::class)]
 #[UniqueEntity(fields: ['email'], message: 'Il existe déjà un compte avec cette email')]
@@ -56,9 +55,9 @@ class Employe implements UserInterface, PasswordAuthenticatedUserInterface, TwoF
     #[ORM\ManyToMany(targetEntity: Projet::class, mappedBy: 'employes')]
     private Collection $projets;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $googleAuthenticatorSecret;
-
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $authCode;
+    
     public function __construct()
     {
         $this->projets = new ArrayCollection();
@@ -222,26 +221,33 @@ class Employe implements UserInterface, PasswordAuthenticatedUserInterface, TwoF
         // $this->plainPassword = null;
     }
 
-    public function getGoogleAuthenticatorSecret(): ?string
+    /* 
+     * ---------------------------------------------------------
+     * 2FA email AUTH
+     * ---------------------------------------------------------
+     */
+    public function isEmailAuthEnabled(): bool
     {
-        return $this->googleAuthenticatorSecret;
+        return true; // This can be a persisted field to switch email code authentication on/off
     }
 
-    public function setGoogleAuthenticatorSecret(?string $googleAuthenticatorSecret): static
-    {
-        $this->googleAuthenticatorSecret = $googleAuthenticatorSecret;
-
-        return $this;
-    }
-
-    public function isGoogleAuthenticatorEnabled(): bool
-    {
-        return null !== $this->googleAuthenticatorSecret;
-    }
- 
-    public function getGoogleAuthenticatorUsername(): string
+    public function getEmailAuthRecipient(): string
     {
         return $this->email;
-    } 
+    }
+
+    public function getEmailAuthCode(): string
+    {
+        if (null === $this->authCode) {
+            throw new \LogicException('The email authentication code was not set');
+        }
+
+        return $this->authCode;
+    }
+
+    public function setEmailAuthCode(string $authCode): void
+    {
+        $this->authCode = $authCode;
+    }
 
 }

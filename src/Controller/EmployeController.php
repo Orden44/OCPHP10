@@ -15,12 +15,6 @@ use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh;
 use Endroid\QrCode\RoundBlockSizeMode\RoundBlockSizeModeMargin;
 use Endroid\QrCode\Writer\PngWriter;
-use Scheb\TwoFactorBundle\Model\Google\TwoFactorInterface as GoogleAuthenticatorTwoFactorInterface;
-use Scheb\TwoFactorBundle\Model\Totp\TwoFactorInterface as TotpTwoFactorInterface;
-use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticatorInterface;
-use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Totp\TotpAuthenticatorInterface;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class EmployeController extends AbstractController
 {
@@ -100,27 +94,4 @@ class EmployeController extends AbstractController
         ]);
     }
 
-    #[Route('/2fa/qrcode', name: '2fa_qrcode')]
-    public function displayGoogleAuthenticatorQrCode(GoogleAuthenticatorInterface $googleAuthenticator): Response
-    {
-
-        return new Response(Builder::create()
-        ->writer(new PngWriter())
-        ->writerOptions([])
-        ->data($googleAuthenticator->getQRContent($this->getUser()))
-        ->encoding(new Encoding('UTF-8'))
-        ->errorCorrectionLevel(new ErrorCorrectionLevelHigh())
-        ->size(200)
-        ->margin(0)
-        ->roundBlockSizeMode(new RoundBlockSizeModeMargin())
-        ->build()->getString(), 200, ['Content-Type' => 'image/png']);
-    }
-
-    #[Route('/2fa', name: '2fa_login')]
-    public function displayGoogleAuthenticator(): Response
-    {
-        return $this->render('authentification/2fa_form.html.twig', [
-            'qrCode' => $this->generateUrl('2fa_qrcode'),
-        ]);
-    }
 }

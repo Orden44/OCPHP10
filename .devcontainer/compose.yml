@@ -1,0 +1,37 @@
+services:
+
+  dev:
+    image: pierresylvain/phpdev:latest
+    command: sleep infinity
+    volumes:
+      - ../.:/workspace
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    environment:
+      DATABASE_URL: "mysql://tasklinker:ChangeTasklinker@database:3306/tasklinker?serverVersion=8.0.32&charset=utf8mb4"
+      MAILER_DSN: "smtp://mailer:1025"
+      
+  database:
+    image: mariadb:10.5.8
+    environment:
+      MYSQL_DATABASE: tasklinker
+      # You should definitely change the password in production
+      MYSQL_PASSWORD: "ChangeTasklinker"
+      MYSQL_ROOT_PASSWORD: "RootPassword"
+      MYSQL_USER: tasklinker   
+    ports:
+       - "3306:3306"
+    volumes:
+      - database_data:/var/lib/mysql
+
+  mailer:
+    image: axllent/mailpit
+    ports:
+      - "1025"
+      - "8025"
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1  
+    
+volumes:
+  database_data:
