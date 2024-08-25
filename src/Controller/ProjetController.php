@@ -12,7 +12,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Projet;
 use App\Form\ProjetType;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 class ProjetController extends AbstractController
 {
     public function __construct(
